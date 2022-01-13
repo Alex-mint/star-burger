@@ -3,16 +3,38 @@ from django.shortcuts import reverse
 from django.templatetags.static import static
 from django.utils.html import format_html
 
-from .models import Product
+from .models import Product, OrderProduct
 from .models import ProductCategory
 from .models import Restaurant
 from .models import RestaurantMenuItem
+from .models import Order
 
 
 class RestaurantMenuItemInline(admin.TabularInline):
     model = RestaurantMenuItem
     extra = 0
 
+
+class OrderProductInline(admin.TabularInline):
+    model = OrderProduct
+    fields = ['product', 'quantity']
+    extra = 0
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    inlines = [
+        OrderProductInline
+    ]
+    fieldsets = (
+        ('Общее', {
+            'fields': [
+                'address',
+                'firstname',
+                'lastname',
+                'phone',
+            ]
+        }),)
 
 @admin.register(Restaurant)
 class RestaurantAdmin(admin.ModelAdmin):
