@@ -5,6 +5,8 @@ from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.serializers import Serializer
+from rest_framework.serializers import CharField
 
 from .models import Product, Order, OrderProduct
 
@@ -61,35 +63,34 @@ def product_list_api(request):
     })
 
 
+class OrderSerializer(Serializer):
+    firstname = CharField()
+    lastname = CharField()
+    phonenumber = CharField()
+    address = CharField()
+
+
 @api_view(['POST'])
 def register_order(request):
     response = request.data
+    serializer = OrderSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
     order = Order.objects.create(
         firstname=response['firstname'],
         lastname=response['lastname'],
         phone=response['phonenumber'],
         address=response['address'],
     )
-    try:
-        products = response['products']
-    except:
-        content = {'error': 'products: Обязательное поле.'}
-        return Response(content, status=status.HTTP_404_NOT_FOUND)
-    if isinstance(products, str):
-        content = {'error': 'products: Ожидался list со значениями, но был получен "str".'}
-        return Response(content, status=status.HTTP_404_NOT_FOUND)
-    if (products is None) or not products:
-        content = {'error': 'products: Этот список не может быть пустым.'}
-        return Response(content, status=status.HTTP_404_NOT_FOUND)
-    else:
-        for item in response['products']:
-            try:
-                product = Product.objects.get(pk=item['product'])
-            except TypeError:
-                raise
-            OrderProduct.objects.create(
-                order=order,
-                product=product,
-                quantity=item['quantity'])
-        return Response({})
+    for item in response['products']:
+        try:
+            product = Product.objects.get(pk=item['product'])
+        except TypeError:
+            raise
+        OrderProduct.objects.create(
+            order=order,
+            product=product,
+            quantity=item['quantity'])
+    return Response({})
+
+
 
