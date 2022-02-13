@@ -1,11 +1,12 @@
 import json
 
+from django.forms import model_to_dict
 from django.http import JsonResponse
 from django.templatetags.static import static
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.serializers import Serializer
+from rest_framework import serializers
 from rest_framework.serializers import CharField
 
 from .models import Product, Order, OrderProduct
@@ -63,11 +64,13 @@ def product_list_api(request):
     })
 
 
-class OrderSerializer(Serializer):
-    firstname = CharField()
-    lastname = CharField()
-    phonenumber = CharField()
-    address = CharField()
+class OrderSerializer(serializers.Serializer):
+    firstname = serializers.CharField()
+    lastname = serializers.CharField()
+    phonenumber = serializers.CharField()
+    address = serializers.CharField()
+    #products = serializers.IntegerField()
+
 
 
 @api_view(['POST'])
@@ -90,7 +93,7 @@ def register_order(request):
             order=order,
             product=product,
             quantity=item['quantity'])
-    return Response({})
+    return Response(model_to_dict(order))
 
 
 
