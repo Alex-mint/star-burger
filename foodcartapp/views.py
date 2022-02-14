@@ -77,7 +77,7 @@ class OrderSerializer(ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['products', 'firstname', 'lastname', 'address', 'phone']
+        fields = ['products', 'firstname', 'lastname', 'address', 'phonenumber']
 
 
 
@@ -89,7 +89,7 @@ def register_order(request):
     order = Order.objects.create(
         firstname=response['firstname'],
         lastname=response['lastname'],
-        phone=response['phone'],
+        phonenumber=response['phonenumber'],
         address=response['address'],
     )
     for item in response['products']:
@@ -101,6 +101,7 @@ def register_order(request):
             order=order,
             product=product,
             quantity=item['quantity'],
+            product_price=product.price
         )
     return Response(model_to_dict(order))
 

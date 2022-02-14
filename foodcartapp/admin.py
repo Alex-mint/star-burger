@@ -17,7 +17,7 @@ class RestaurantMenuItemInline(admin.TabularInline):
 
 class OrderProductInline(admin.TabularInline):
     model = OrderProduct
-    fields = ['product', 'quantity']
+    fields = ['product', 'quantity', 'product_price']
     extra = 0
 
 
@@ -34,7 +34,7 @@ class OrderAdmin(admin.ModelAdmin):
                 'address',
                 'firstname',
                 'lastname',
-                'phone',
+                'phonenumber',
             ]
         }),)
 

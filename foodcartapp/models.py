@@ -128,7 +128,7 @@ class OrderQuerySet(models.QuerySet):
     def count_price(self):
         total_price = self.annotate(
             total_price=Sum(F('orderproduct__quantity') * F(
-                'orderproduct__product__price')))
+                'orderproduct__product_price')))
         return total_price
 
 
@@ -151,7 +151,7 @@ class Order(models.Model):
         'Фамилия',
         max_length=250
     )
-    phone = models.CharField(
+    phonenumber = models.CharField(
         'Телефон',
         max_length=250,
         db_index=True
@@ -174,9 +174,25 @@ class Order(models.Model):
 
 
 class OrderProduct(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name='заказ')
-    product = models.ForeignKey(Product, on_delete=models.DO_NOTHING, verbose_name='продукт', related_name='selected_product')
-    quantity = models.PositiveIntegerField('количество', default=1)
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE,
+        verbose_name='заказ'
+    )
+    product = models.ForeignKey(
+        Product, on_delete=models.DO_NOTHING,
+        verbose_name='продукт',
+        related_name='selected_product'
+    )
+    quantity = models.PositiveIntegerField(
+        'количество',
+        default=1
+    )
+    product_price = models.DecimalField(
+        'Цена товара',
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
 
     def __str__(self):
         return f'{self.order} {self.product}'
