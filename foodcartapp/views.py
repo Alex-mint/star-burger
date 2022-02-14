@@ -1,5 +1,6 @@
 import json
 
+from django.db import transaction
 from django.forms import model_to_dict
 from django.http import JsonResponse
 from django.templatetags.static import static
@@ -80,7 +81,7 @@ class OrderSerializer(ModelSerializer):
         fields = ['products', 'firstname', 'lastname', 'address', 'phonenumber']
 
 
-
+@transaction.atomic
 @api_view(['POST'])
 def register_order(request):
     response = request.data
