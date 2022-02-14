@@ -97,6 +97,7 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
+    unhandled_orders = Order.objects.filter(status='unhandled').count_price()
     return render(request, template_name='order_items.html', context={
-        'order_items': Order.objects.all()
+        'order_items': unhandled_orders
     })

@@ -23,6 +23,8 @@ class OrderProductInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
+    list_display = ['id', 'firstname', 'status']
+    list_editable = ['status']
     inlines = [
         OrderProductInline
     ]

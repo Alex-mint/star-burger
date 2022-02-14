@@ -7,7 +7,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import serializers
-from rest_framework.serializers import CharField
+from rest_framework.serializers import ModelSerializer
 
 from .models import Product, Order, OrderProduct
 
@@ -64,12 +64,20 @@ def product_list_api(request):
     })
 
 
-class OrderSerializer(serializers.Serializer):
-    firstname = serializers.CharField()
-    lastname = serializers.CharField()
-    phonenumber = serializers.CharField()
-    address = serializers.CharField()
-    #products = serializers.IntegerField()
+
+
+class ProductsSerializer(ModelSerializer):
+    class Meta:
+        model = OrderProduct
+        fields = ['product', 'quantity']
+
+
+class OrderSerializer(ModelSerializer):
+    products = ProductsSerializer(many=True, allow_empty=False, write_only=True)
+
+    class Meta:
+        model = Order
+        fields = ['products', 'firstname', 'lastname', 'address', 'phone']
 
 
 
@@ -81,7 +89,7 @@ def register_order(request):
     order = Order.objects.create(
         firstname=response['firstname'],
         lastname=response['lastname'],
-        phone=response['phonenumber'],
+        phone=response['phone'],
         address=response['address'],
     )
     for item in response['products']:
@@ -92,7 +100,8 @@ def register_order(request):
         OrderProduct.objects.create(
             order=order,
             product=product,
-            quantity=item['quantity'])
+            quantity=item['quantity'],
+        )
     return Response(model_to_dict(order))
 
 
