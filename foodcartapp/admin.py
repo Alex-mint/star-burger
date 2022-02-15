@@ -1,7 +1,9 @@
 from django.contrib import admin
-from django.shortcuts import reverse
+from django.shortcuts import reverse, redirect
 from django.templatetags.static import static
+from django.utils.encoding import iri_to_uri
 from django.utils.html import format_html
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import Product, OrderProduct
 from .models import ProductCategory
@@ -37,6 +39,12 @@ class OrderAdmin(admin.ModelAdmin):
                 'phonenumber',
             ]
         }),)
+    def response_change(self, request, obj):
+        if url_has_allowed_host_and_scheme('/manager/orders/', None):
+            url = iri_to_uri('/manager/orders/')
+            return redirect(url)
+        else:
+            pass
 
 @admin.register(Restaurant)
 class RestaurantAdmin(admin.ModelAdmin):
