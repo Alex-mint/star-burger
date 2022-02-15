@@ -163,6 +163,10 @@ class Order(models.Model):
         max_length=20,
         db_index=True
     )
+    comment = models.TextField(
+        'Комментарий к заказу',
+        blank=True
+    )
     objects = OrderQuerySet.as_manager()
 
     class Meta:
