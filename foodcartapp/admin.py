@@ -37,6 +37,7 @@ class OrderAdmin(admin.ModelAdmin):
                 'firstname',
                 'lastname',
                 'phonenumber',
+                'status',
             ]
         }),)
     def response_change(self, request, obj):

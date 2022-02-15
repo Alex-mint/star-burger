@@ -136,8 +136,8 @@ class Order(models.Model):
     HANDLED_ORDER = 'handled'
     NEW_ORDER = 'unhandled'
     STATUS = [
-        (HANDLED_ORDER, 'Обработанный заказ'),
-        (NEW_ORDER, 'Не обработанный заказ'),
+        (HANDLED_ORDER, 'Обработанный'),
+        (NEW_ORDER, 'Необработанный'),
     ]
     address = models.CharField(
         'Aдрес',
