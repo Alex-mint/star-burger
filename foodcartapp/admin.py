@@ -30,7 +30,7 @@ class OrderAdmin(admin.ModelAdmin):
     inlines = [
         OrderProductInline
     ]
-
+    readonly_fields = ['registrated_at']
     def response_change(self, request, obj):
         if url_has_allowed_host_and_scheme('/manager/orders/', None):
             url = iri_to_uri('/manager/orders/')

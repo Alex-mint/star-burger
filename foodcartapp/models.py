@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from django.db.models import Sum, F
+from django.utils import timezone
 
 
 class Restaurant(models.Model):
@@ -127,8 +128,8 @@ class RestaurantMenuItem(models.Model):
 class OrderQuerySet(models.QuerySet):
     def count_price(self):
         total_price = self.annotate(
-            total_price=Sum(F('orderproduct__quantity') * F(
-                'orderproduct__product_price')))
+            total_price=Sum(F('order_products__quantity') * F(
+                'order_products__product_price')))
         return total_price
 
 
@@ -138,6 +139,14 @@ class Order(models.Model):
     STATUS = [
         (HANDLED_ORDER, 'Обработанный'),
         (NEW_ORDER, 'Необработанный'),
+    ]
+    CASH = 'cash'
+    CARD = 'card'
+    UNKNOWN = 'unknown'
+    PAYMENT_METHOD = [
+        (CASH, 'Наличкой'),
+        (CARD, 'Картой'),
+        (UNKNOWN, 'Неизвестно')
     ]
     address = models.CharField(
         'Aдрес',
@@ -156,12 +165,43 @@ class Order(models.Model):
         max_length=250,
         db_index=True
     )
+    registrated_at = models.DateTimeField(
+        'Заказ создан',
+        db_index=True,
+        default=timezone.now
+    )
+    colled_at = models.DateTimeField(
+        'Звонок клиенту',
+        db_index=True,
+        blank=True,
+        null=True
+    )
+    derivered_at = models.DateTimeField(
+        'Заказ доставлен',
+        db_index=True,
+        blank=True,
+        null=True
+    )
+    payment_method = models.CharField(
+        'Способ оплаты',
+        choices=PAYMENT_METHOD,
+        default=UNKNOWN,
+        max_length=12,
+        db_index=True
+    )
     status = models.CharField(
         'Статус заказа',
         choices=STATUS,
         default=NEW_ORDER,
         max_length=20,
         db_index=True
+    )
+    restaurant = models.ForeignKey(
+        Restaurant,
+        related_name='orders',
+        on_delete=models.CASCADE,
+        verbose_name='ресторан',
+        null=True
     )
     comment = models.TextField(
         'Комментарий к заказу',
@@ -180,7 +220,8 @@ class Order(models.Model):
 class OrderProduct(models.Model):
     order = models.ForeignKey(
         Order, on_delete=models.CASCADE,
-        verbose_name='заказ'
+        verbose_name='заказ',
+        related_name='order_products'
     )
     product = models.ForeignKey(
         Product, on_delete=models.DO_NOTHING,

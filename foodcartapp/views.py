@@ -10,7 +10,7 @@ from rest_framework import status
 from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
 
-from .models import Product, Order, OrderProduct
+from .models import Product, Order, OrderProduct, RestaurantMenuItem
 
 
 def banners_list_api(request):
@@ -96,6 +96,7 @@ def register_order(request):
     for item in response['products']:
         try:
             product = Product.objects.get(pk=item['product'])
+            print(f'product {product}')
         except TypeError:
             raise
         OrderProduct.objects.create(

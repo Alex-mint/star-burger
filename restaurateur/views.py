@@ -1,14 +1,17 @@
 from django import forms
+from django.forms import model_to_dict
 from django.shortcuts import redirect, render
+from django.template.defaultfilters import first
 from django.views import View
 from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
+from collections import Counter
 
-
-from foodcartapp.models import Product, Restaurant, Order
+from foodcartapp.models import Product, Restaurant, Order, RestaurantMenuItem, \
+    OrderProduct
 
 
 class Login(forms.Form):
@@ -95,9 +98,49 @@ def view_restaurants(request):
     })
 
 
+def get_restaurants(order, orders_items, products_by_restaurants):
+    products_in_order = [
+        item['product'] for item in orders_items if item['order'] == order.id
+    ]
+    restaurants_by_order = Counter(
+        (
+            items['restaurant__name']
+        ) for items in products_by_restaurants if
+        items['product'] in products_in_order
+    )
+    return [
+        first(item) for item in
+        restaurants_by_order.most_common(len(products_in_order))
+    ]
+
+
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    unhandled_orders = Order.objects.filter(status='unhandled').count_price()
+    unhandled_orders = Order.objects.filter(
+        status='unhandled').count_price()
+    orders_items = OrderProduct.objects.filter(
+        order__in=unhandled_orders
+    ).values('order', 'product')
+
+    products_by_restaurants = RestaurantMenuItem.objects.filter(
+        availability=True, product__in=orders_items.values('product')
+    ).values('restaurant__name', 'restaurant__address', 'product')
+    orders_details = []
+    for order in unhandled_orders:
+        restaurants = []
+        get_restaurants(order, orders_items, products_by_restaurants)
+
+        for name in get_restaurants(order, orders_items, products_by_restaurants):
+            restaurants.append(
+                {
+                    'name': name,
+                }
+            )
+        order_details = {
+            'order': order,
+            'restaurants': restaurants,
+        }
+        print(order_details)
+        orders_details.append(order_details)
     return render(request, template_name='order_items.html', context={
-        'order_items': unhandled_orders
-    })
+        'order_details': orders_details})
